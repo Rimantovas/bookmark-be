@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { CollectionsModule } from './collections/collections.module';
 import { SocialAppsModule } from './social-apps/social-apps.module';
 import { TagsModule } from './tags/tags.module';
@@ -25,6 +26,7 @@ import { UsersModule } from './users/users.module';
     CollectionsModule,
     TagsModule,
     SocialAppsModule,
+    BookmarksModule,
   ],
 })
 export class AppModule {}

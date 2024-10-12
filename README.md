@@ -52,9 +52,9 @@ $ yarn run test:cov
 - create collection
 - get collections
 - get collection
-- get collection items
 - update collection
 - delete collection
+- get collection bookmarks
 
 ## Bookmarks
 

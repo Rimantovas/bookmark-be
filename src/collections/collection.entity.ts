@@ -1,8 +1,10 @@
+import { Bookmark } from 'src/bookmarks/bookmark.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -25,9 +27,12 @@ export class Collection {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, user => user.collections)
+  @ManyToOne(() => User, (user) => user.collections)
   user: User;
 
   @Column()
   userId: string;
+
+  @OneToMany(() => Bookmark, (bookmark) => bookmark.collection)
+  bookmarks: Bookmark[];
 }

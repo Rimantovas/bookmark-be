@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
+import { Bookmark } from '../bookmarks/bookmark.entity';
+import { BookmarksService } from '../bookmarks/bookmarks.service';
 import { User } from '../users/user.entity';
 import { Collection } from './collection.entity';
 import { CollectionsService } from './collections.service';
@@ -17,11 +19,14 @@ import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 
 @Controller('collections')
+@UseGuards(Auth0JwtGuard)
 export class CollectionsController {
-  constructor(private readonly collectionsService: CollectionsService) {}
+  constructor(
+    private readonly collectionsService: CollectionsService,
+    private readonly bookmarksService: BookmarksService,
+  ) {}
 
   @Post()
-  @UseGuards(Auth0JwtGuard)
   async createCollection(
     @GetUser() user: User,
     @Body() createCollectionDto: CreateCollectionDto,
@@ -33,7 +38,6 @@ export class CollectionsController {
   }
 
   @Get()
-  @UseGuards(Auth0JwtGuard)
   async getCollections(@GetUser() user: User): Promise<Collection[]> {
     return this.collectionsService.getCollections(user.id);
   }
@@ -44,7 +48,6 @@ export class CollectionsController {
   }
 
   @Put(':id')
-  @UseGuards(Auth0JwtGuard)
   async updateCollection(
     @Param('id') id: string,
     @Body() updateCollectionDto: UpdateCollectionDto,
@@ -53,8 +56,12 @@ export class CollectionsController {
   }
 
   @Delete(':id')
-  @UseGuards(Auth0JwtGuard)
   async deleteCollection(@Param('id') id: string): Promise<void> {
     return this.collectionsService.deleteCollection(id);
+  }
+
+  @Get(':id/bookmarks')
+  async getCollectionBookmarks(@Param('id') id: string): Promise<Bookmark[]> {
+    return this.bookmarksService.getBookmarksByCollectionId(id);
   }
 }
