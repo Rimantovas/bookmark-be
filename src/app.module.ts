@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CollectionsModule } from './collections/collections.module';
+import { SocialAppsModule } from './social-apps/social-apps.module';
 import { TagsModule } from './tags/tags.module';
 import { UsersModule } from './users/users.module';
 
@@ -23,6 +24,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     CollectionsModule,
     TagsModule,
+    SocialAppsModule,
   ],
 })
 export class AppModule {}
