@@ -8,6 +8,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from '../users/user.entity';
@@ -16,6 +17,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { Tag } from './tag.entity';
 import { TagsService } from './tags.service';
 
+@ApiTags('tags')
 @Controller('tags')
 @UseGuards(Auth0JwtGuard)
 export class TagsController {

@@ -54,11 +54,12 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Bomberman')
+    .setTitle('Bookmarks API')
     .setDescription('Bomberman API description')
     .setVersion('1.0')
     .addBearerAuth()
-    .addTag('BOMBERMAN')
+    .addTag('Bookmarks')
+    .setExternalDoc('Postman Collection', '/api-json')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

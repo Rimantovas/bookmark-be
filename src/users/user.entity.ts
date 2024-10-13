@@ -10,7 +10,7 @@ import { Collection } from '../collections/collection.entity';
 import { UserRole } from '../shared/enums/user-role.enum';
 import { Tag } from '../tags/tag.entity';
 
-@Entity()
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

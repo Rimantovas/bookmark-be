@@ -9,18 +9,20 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { Bookmark } from './bookmark.entity';
 import { BookmarksService } from './bookmarks.service';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
 import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 
+@ApiTags('bookmarks')
 @Controller('bookmarks')
-@UseGuards(Auth0JwtGuard)
 export class BookmarksController {
   constructor(private readonly bookmarksService: BookmarksService) {}
 
   @Post()
+  @UseGuards(Auth0JwtGuard)
   async createBookmark(
     @Body() createBookmarkDto: CreateBookmarkDto,
   ): Promise<Bookmark> {
@@ -38,6 +40,7 @@ export class BookmarksController {
   }
 
   @Put(':id')
+  @UseGuards(Auth0JwtGuard)
   async updateBookmark(
     @Param('id') id: string,
     @Body() updateBookmarkDto: UpdateBookmarkDto,
@@ -46,6 +49,7 @@ export class BookmarksController {
   }
 
   @Delete(':id')
+  @UseGuards(Auth0JwtGuard)
   async deleteBookmark(@Param('id') id: string): Promise<void> {
     return this.bookmarksService.deleteBookmark(id);
   }

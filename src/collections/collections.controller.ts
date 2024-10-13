@@ -8,6 +8,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import { Bookmark } from '../bookmarks/bookmark.entity';
@@ -18,6 +19,7 @@ import { CollectionsService } from './collections.service';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 
+@ApiTags('collections')
 @Controller('collections')
 @UseGuards(Auth0JwtGuard)
 export class CollectionsController {
