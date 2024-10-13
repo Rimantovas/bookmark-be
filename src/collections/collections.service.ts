@@ -8,7 +8,10 @@ import { UpdateCollectionDto } from './dto/update-collection.dto';
 export class CollectionsService {
   constructor(private readonly collectionsRepository: CollectionsRepository) {}
 
-  async createCollection(userId: string, createCollectionDto: CreateCollectionDto): Promise<Collection> {
+  async createCollection(
+    userId: string,
+    createCollectionDto: CreateCollectionDto,
+  ): Promise<Collection> {
     const newCollection = {
       ...createCollectionDto,
       userId,
@@ -28,7 +31,10 @@ export class CollectionsService {
     return collection;
   }
 
-  async updateCollection(id: string, updateCollectionDto: UpdateCollectionDto): Promise<Collection> {
+  async updateCollection(
+    id: string,
+    updateCollectionDto: UpdateCollectionDto,
+  ): Promise<Collection> {
     const collection = await this.getCollection(id);
     return this.collectionsRepository.updateCollection(id, {
       ...collection,
