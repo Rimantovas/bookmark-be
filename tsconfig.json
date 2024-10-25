@@ -9,7 +9,6 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -18,6 +17,5 @@
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src/**/*.ts", "ormconfig.ts"]
+  }
 }
