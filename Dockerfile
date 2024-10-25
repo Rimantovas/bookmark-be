@@ -8,6 +8,9 @@ WORKDIR /usr/src/app
 # Copy package.json and yarn.lock
 COPY package.json yarn.lock ./
 
+# Set Yarn version (optional, remove if not needed)
+RUN yarn set version 3.6.4
+
 # Install dependencies
 RUN yarn install --frozen-lockfile || yarn install --no-lockfile
 
