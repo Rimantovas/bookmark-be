@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { passportJwtSecret } from 'jwks-rsa';
@@ -38,20 +38,20 @@ export class Auth0Strategy extends PassportStrategy(Strategy, 'jwt') {
     // Adjust this according to where the role is actually stored in your token
     const role = payload.app_metadata?.role;
 
-    if (!role) {
-      throw new UnauthorizedException('No role found in token');
-    }
+    // if (!role) {
+    //   throw new UnauthorizedException('No role found in token');
+    // }
 
-    // Validate that the role is a valid UserRole
-    if (!Object.values(UserRole).includes(role)) {
-      throw new UnauthorizedException('Invalid role');
-    }
+    // // Validate that the role is a valid UserRole
+    // if (!Object.values(UserRole).includes(role)) {
+    //   throw new UnauthorizedException('Invalid role');
+    // }
 
     // Return an object with the necessary user information
     return {
       userId: payload.sub,
       email: payload.email,
-      role: role as UserRole,
+      role: (role as UserRole) || UserRole.REGULAR,
       // Include any other relevant user information from the payload
     };
   }
