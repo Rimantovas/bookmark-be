@@ -9,7 +9,6 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -109,11 +108,14 @@ export class CollectionsController {
   @HttpCode(HttpStatus.OK)
   async getCollection(
     @Param('id', ParseUUIDPipe) id: string,
+    @GetUserOptional() user: Promise<User | null>,
   ): Promise<Collection> {
-    const collection = await this.collectionsService.getCollection(id);
-    if (collection.private) {
-      throw new UnauthorizedException('This collection is private');
-    }
+    const resolvedUser = await user;
+    const collection = await this.collectionsService.getCollection(
+      id,
+      resolvedUser?.id,
+    );
+
     return collection;
   }
 
@@ -132,8 +134,14 @@ export class CollectionsController {
   async updateCollection(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCollectionDto: UpdateCollectionDto,
+    @GetUser() user: Promise<User>,
   ): Promise<Collection> {
-    return this.collectionsService.updateCollection(id, updateCollectionDto);
+    const resolvedUser = await user;
+    return this.collectionsService.updateCollection(
+      id,
+      updateCollectionDto,
+      resolvedUser.id,
+    );
   }
 
   @Delete(':id')
@@ -149,8 +157,10 @@ export class CollectionsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteCollection(
     @Param('id', ParseUUIDPipe) id: string,
+    @GetUser() user: Promise<User>,
   ): Promise<void> {
-    return this.collectionsService.deleteCollection(id);
+    const resolvedUser = await user;
+    return this.collectionsService.deleteCollection(id, resolvedUser.id);
   }
 
   @Get(':id/bookmarks')
@@ -166,8 +176,12 @@ export class CollectionsController {
   @HttpCode(HttpStatus.OK)
   async getCollectionBookmarks(
     @Param('id', ParseUUIDPipe) id: string,
-    @GetUserOptional() user: User | null,
+    @GetUserOptional() user: Promise<User | null>,
   ): Promise<Bookmark[]> {
-    return await this.bookmarksService.getBookmarksByCollectionId(id, user);
+    const resolvedUser = await user;
+    return await this.bookmarksService.getBookmarksByCollectionId(
+      id,
+      resolvedUser,
+    );
   }
 }

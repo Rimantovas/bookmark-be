@@ -47,12 +47,13 @@ export class BookmarksRepository extends Repository<Bookmark> {
     await this.delete(id);
   }
 
-  async searchBookmarks(query: string): Promise<Bookmark[]> {
+  async searchBookmarks(query: string, userId: string): Promise<Bookmark[]> {
     return this.createQueryBuilder('bookmark')
       .leftJoinAndSelect('bookmark.tags', 'tag')
       .leftJoinAndSelect('bookmark.app', 'app')
       .where('bookmark.title ILIKE :query', { query: `%${query}%` })
       .orWhere('bookmark.description ILIKE :query', { query: `%${query}%` })
+      .andWhere('bookmark.userId = :userId', { userId })
       .getMany();
   }
 }

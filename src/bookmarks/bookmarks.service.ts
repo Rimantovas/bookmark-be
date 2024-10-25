@@ -79,9 +79,17 @@ export class BookmarksService {
     });
   }
 
-  async getBookmark(id: string): Promise<Bookmark> {
+  async getBookmark(id: string, userId: string | undefined): Promise<Bookmark> {
     const bookmark = await this.bookmarksRepository.findById(id);
     if (!bookmark) {
+      throw new NotFoundException(`Bookmark with ID "${id}" not found`);
+    }
+
+    const collection = await this.collectionRepository.findOne({
+      where: { id: bookmark.collectionId },
+      relations: ['user'],
+    });
+    if (collection && collection.private && collection.user.id !== userId) {
       throw new NotFoundException(`Bookmark with ID "${id}" not found`);
     }
     return bookmark;
@@ -92,12 +100,12 @@ export class BookmarksService {
     updateBookmarkDto: UpdateBookmarkDto,
     userId: string,
   ): Promise<Bookmark> {
-    const bookmark = await this.getBookmark(id);
+    const bookmark = await this.getBookmark(id, userId);
 
     // Check if the bookmark belongs to the user
-    if (bookmark.userId !== userId) {
-      throw new ForbiddenException(
-        'You do not have permission to update this bookmark',
+    if (!bookmark || bookmark.userId !== userId) {
+      throw new NotFoundException(
+        `Bookmark with ID "${id}" not found or does not belong to you`,
       );
     }
 
@@ -108,8 +116,10 @@ export class BookmarksService {
         where: { id: In(updateBookmarkDto.tagIds), userId },
       });
       if (tags.length !== updateBookmarkDto.tagIds.length) {
-        throw new BadRequestException(
-          'One or more tag IDs are invalid or do not belong to you',
+        throw new NotFoundException(
+          `One or more tag IDs were not found: ${updateBookmarkDto.tagIds.filter(
+            (id) => !tags?.some((tag) => tag.id === id),
+          )}`,
         );
       }
       updateData.tags = tags;
@@ -120,7 +130,9 @@ export class BookmarksService {
         where: { id: updateBookmarkDto.appId },
       });
       if (!app) {
-        throw new BadRequestException('Invalid app ID');
+        throw new NotFoundException(
+          `App with ID "${updateBookmarkDto.appId}" not found`,
+        );
       }
       updateData.app = app;
     }
@@ -130,8 +142,8 @@ export class BookmarksService {
         where: { id: updateBookmarkDto.collectionId, userId },
       });
       if (!collection) {
-        throw new BadRequestException(
-          'Invalid collection ID or the collection does not belong to you',
+        throw new NotFoundException(
+          `Collection with ID "${updateBookmarkDto.collectionId}" not found`,
         );
       }
       updateData.collection = collection;
@@ -140,13 +152,18 @@ export class BookmarksService {
     return this.bookmarksRepository.updateBookmark(id, updateData);
   }
 
-  async deleteBookmark(id: string): Promise<void> {
-    await this.getBookmark(id);
+  async deleteBookmark(id: string, userId: string): Promise<void> {
+    const bookmark = await this.getBookmark(id, userId);
+    if (!bookmark || bookmark.userId !== userId) {
+      throw new NotFoundException(
+        'You do not have permission to delete this bookmark',
+      );
+    }
     await this.bookmarksRepository.deleteBookmark(id);
   }
 
-  async searchBookmarks(query: string): Promise<Bookmark[]> {
-    return this.bookmarksRepository.searchBookmarks(query);
+  async searchBookmarks(query: string, userId: string): Promise<Bookmark[]> {
+    return this.bookmarksRepository.searchBookmarks(query, userId);
   }
 
   async getBookmarksByCollectionId(

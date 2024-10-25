@@ -19,6 +19,7 @@ import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { Bookmark } from './bookmark.entity';
 import { BookmarksService } from './bookmarks.service';
 // import { BookmarkResponseDto } from './dto/bookmark-response.dto';
+import { GetUserOptional } from 'src/auth/get-user-optional.decorator';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
 import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 
@@ -46,13 +47,18 @@ export class BookmarksController {
   }
 
   @Get('search')
+  @UseGuards(Auth0JwtGuard)
   @ApiOperation({
     summary: 'Search bookmarks',
     operationId: 'searchBookmarks',
   })
   @HttpCode(HttpStatus.OK)
-  async searchBookmarks(@Query('q') query: string): Promise<Bookmark[]> {
-    return this.bookmarksService.searchBookmarks(query);
+  async searchBookmarks(
+    @Query('q') query: string,
+    @GetUser() user: Promise<User>,
+  ): Promise<Bookmark[]> {
+    const resolvedUser = await user;
+    return this.bookmarksService.searchBookmarks(query, resolvedUser.id);
   }
 
   @Get(':id')
@@ -66,8 +72,12 @@ export class BookmarksController {
     type: Bookmark,
   })
   @HttpCode(HttpStatus.OK)
-  async getBookmark(@Param('id', ParseUUIDPipe) id: string): Promise<Bookmark> {
-    return await this.bookmarksService.getBookmark(id);
+  async getBookmark(
+    @Param('id', ParseUUIDPipe) id: string,
+    @GetUserOptional() user: Promise<User | null>,
+  ): Promise<Bookmark> {
+    const resolvedUser = await user;
+    return this.bookmarksService.getBookmark(id, resolvedUser?.id);
   }
 
   @Put(':id')
@@ -97,7 +107,11 @@ export class BookmarksController {
     operationId: 'deleteBookmark',
   })
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBookmark(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.bookmarksService.deleteBookmark(id);
+  async deleteBookmark(
+    @Param('id', ParseUUIDPipe) id: string,
+    @GetUser() user: Promise<User>,
+  ): Promise<void> {
+    const resolvedUser = await user;
+    return this.bookmarksService.deleteBookmark(id, resolvedUser.id);
   }
 }

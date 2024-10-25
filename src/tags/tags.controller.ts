@@ -74,8 +74,11 @@ export class TagsController {
     type: Tag,
   })
   @HttpCode(HttpStatus.OK)
-  async getTag(@Param('id', ParseUUIDPipe) id: string): Promise<Tag> {
-    return this.tagsService.getTag(id);
+  async getTag(
+    @Param('id', ParseUUIDPipe) id: string,
+    @GetUser() user: User,
+  ): Promise<Tag> {
+    return this.tagsService.getTag(id, user.id);
   }
 
   @Put(':id')
@@ -91,8 +94,9 @@ export class TagsController {
   async updateTag(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTagDto: UpdateTagDto,
+    @GetUser() user: User,
   ): Promise<Tag> {
-    return this.tagsService.updateTag(id, updateTagDto);
+    return this.tagsService.updateTag(id, user.id, updateTagDto);
   }
 
   @Delete(':id')
@@ -104,7 +108,10 @@ export class TagsController {
     status: HttpStatus.NO_CONTENT,
   })
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteTag(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.tagsService.deleteTag(id);
+  async deleteTag(
+    @Param('id', ParseUUIDPipe) id: string,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.tagsService.deleteTag(id, user.id);
   }
 }

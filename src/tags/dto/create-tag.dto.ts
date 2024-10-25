@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsHexColor, IsOptional, IsString } from 'class-validator';
 
 export class CreateTagDto {
   @IsString()
@@ -7,6 +7,7 @@ export class CreateTagDto {
   name: string;
 
   @IsString()
+  @IsHexColor()
   @ApiProperty({ type: String })
   color: string;
 

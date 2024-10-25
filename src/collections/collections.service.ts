@@ -24,9 +24,12 @@ export class CollectionsService {
     return this.collectionsRepository.findByUserId(userId);
   }
 
-  async getCollection(id: string): Promise<Collection> {
+  async getCollection(
+    id: string,
+    userId: string | undefined,
+  ): Promise<Collection> {
     const collection = await this.collectionsRepository.findById(id);
-    if (!collection) {
+    if (!collection || (collection.private && collection.userId !== userId)) {
       throw new NotFoundException(`Collection with ID "${id}" not found`);
     }
     return collection;
@@ -35,16 +38,20 @@ export class CollectionsService {
   async updateCollection(
     id: string,
     updateCollectionDto: UpdateCollectionDto,
+    userId: string | undefined,
   ): Promise<Collection> {
-    const collection = await this.getCollection(id);
+    const collection = await this.getCollection(id, userId);
     return this.collectionsRepository.updateCollection(id, {
       ...collection,
       ...updateCollectionDto,
     });
   }
 
-  async deleteCollection(id: string): Promise<void> {
-    await this.getCollection(id);
+  async deleteCollection(
+    id: string,
+    userId: string | undefined,
+  ): Promise<void> {
+    await this.getCollection(id, userId);
     await this.collectionsRepository.deleteCollection(id);
   }
 

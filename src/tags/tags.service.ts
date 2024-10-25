@@ -20,24 +20,33 @@ export class TagsService {
     return this.tagsRepository.findByUserId(userId);
   }
 
-  async getTag(id: string): Promise<Tag> {
+  async getTag(id: string, userId: string): Promise<Tag> {
     const tag = await this.tagsRepository.findById(id);
-    if (!tag) {
+    if (!tag || tag.userId !== userId) {
       throw new NotFoundException(`Tag with ID "${id}" not found`);
     }
     return tag;
   }
 
-  async updateTag(id: string, updateTagDto: UpdateTagDto): Promise<Tag> {
-    const tag = await this.getTag(id);
-    return this.tagsRepository.updateTag(id, {
-      ...tag,
-      ...updateTagDto,
-    });
+  async updateTag(
+    id: string,
+    userId: string,
+    updateTagDto: UpdateTagDto,
+  ): Promise<Tag> {
+    const tag = await this.tagsRepository.findById(id);
+    if (!tag || tag.userId !== userId) {
+      throw new NotFoundException(`Tag with ID "${id}" not found`);
+    }
+
+    return this.tagsRepository.updateTag(id, updateTagDto);
   }
 
-  async deleteTag(id: string): Promise<void> {
-    await this.getTag(id);
+  async deleteTag(id: string, userId: string): Promise<void> {
+    const tag = await this.tagsRepository.findById(id);
+    if (!tag || tag.userId !== userId) {
+      throw new NotFoundException(`Tag with ID "${id}" not found`);
+    }
+
     await this.tagsRepository.deleteTag(id);
   }
 }
