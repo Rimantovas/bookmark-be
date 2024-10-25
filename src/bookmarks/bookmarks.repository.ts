@@ -36,15 +36,24 @@ export class BookmarksRepository extends Repository<Bookmark> {
       throw new NotFoundException(`Bookmark with ID "${id}" not found`);
     }
 
-    // Update properties
-    Object.assign(bookmark, bookmarkData);
+    // Merge the updated data
+    const updatedBookmark = this.merge(bookmark, bookmarkData);
+
+    // If tags are being updated, we need to handle the many-to-many relationship manually
+    if ('tags' in bookmarkData && bookmarkData.tags) {
+      updatedBookmark.tags = bookmarkData.tags;
+    }
 
     // Save the updated bookmark
-    return this.save(bookmark);
+    return this.save(updatedBookmark);
   }
 
   async deleteBookmark(id: string): Promise<void> {
-    await this.delete(id);
+    const bookmark = await this.findOne({ where: { id }, relations: ['tags'] });
+    if (!bookmark) {
+      throw new NotFoundException(`Bookmark with ID "${id}" not found`);
+    }
+    await this.remove(bookmark);
   }
 
   async searchBookmarks(query: string, userId: string): Promise<Bookmark[]> {

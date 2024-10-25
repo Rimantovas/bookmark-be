@@ -41,7 +41,10 @@ export class Collection {
   @ApiProperty()
   userId: string;
 
-  @OneToMany(() => Bookmark, (bookmark) => bookmark.collection)
+  @OneToMany(() => Bookmark, (bookmark) => bookmark.collection, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   bookmarks: Bookmark[];
 
   @VirtualColumn({

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { SearchPaginationDto } from '../shared/dto/search-pagination.dto';
 import { Collection } from './collection.entity';
@@ -35,7 +35,14 @@ export class CollectionsRepository extends Repository<Collection> {
   }
 
   async deleteCollection(id: string): Promise<void> {
-    await this.delete(id);
+    const collection = await this.findOne({
+      where: { id },
+      relations: ['bookmarks', 'bookmarks.tags'],
+    });
+    if (!collection) {
+      throw new NotFoundException(`Collection with ID "${id}" not found`);
+    }
+    await this.remove(collection);
   }
 
   async searchCollections(

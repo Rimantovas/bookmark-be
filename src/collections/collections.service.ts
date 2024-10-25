@@ -41,6 +41,9 @@ export class CollectionsService {
     userId: string | undefined,
   ): Promise<Collection> {
     const collection = await this.getCollection(id, userId);
+    if (!collection || collection.userId !== userId) {
+      throw new NotFoundException(`Collection with ID "${id}" not found`);
+    }
     return this.collectionsRepository.updateCollection(id, {
       ...collection,
       ...updateCollectionDto,
@@ -51,7 +54,10 @@ export class CollectionsService {
     id: string,
     userId: string | undefined,
   ): Promise<void> {
-    await this.getCollection(id, userId);
+    const collection = await this.getCollection(id, userId);
+    if (!collection || collection.userId !== userId) {
+      throw new NotFoundException(`Collection with ID "${id}" not found`);
+    }
     await this.collectionsRepository.deleteCollection(id);
   }
 

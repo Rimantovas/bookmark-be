@@ -111,30 +111,46 @@ export class BookmarksService {
 
     const updateData: Partial<Bookmark> = { ...updateBookmarkDto };
 
-    if (updateBookmarkDto.tagIds) {
-      const tags = await this.tagRepository.find({
-        where: { id: In(updateBookmarkDto.tagIds), userId },
-      });
-      if (tags.length !== updateBookmarkDto.tagIds.length) {
-        throw new NotFoundException(
-          `One or more tag IDs were not found: ${updateBookmarkDto.tagIds.filter(
-            (id) => !tags?.some((tag) => tag.id === id),
-          )}`,
-        );
+    // Handle tags update
+    if (updateBookmarkDto.tagIds !== undefined) {
+      if (updateBookmarkDto.tagIds.length === 0) {
+        // If tagIds is an empty array, remove all tags
+        updateData.tags = [];
+      } else {
+        // Fetch tags based on provided tagIds
+        const tags = await this.tagRepository.find({
+          where: { id: In(updateBookmarkDto.tagIds), userId },
+        });
+
+        // Check if all provided tagIds were found
+        if (tags.length !== updateBookmarkDto.tagIds.length) {
+          const missingTagIds = updateBookmarkDto.tagIds.filter(
+            (id) => !tags.some((tag) => tag.id === id),
+          );
+          throw new NotFoundException(
+            `One or more tag IDs were not found: ${missingTagIds.join(', ')}`,
+          );
+        }
+
+        // Update tags
+        updateData.tags = tags;
       }
-      updateData.tags = tags;
     }
 
-    if (updateBookmarkDto.appId) {
-      const app = await this.appRepository.findOne({
-        where: { id: updateBookmarkDto.appId },
-      });
-      if (!app) {
-        throw new NotFoundException(
-          `App with ID "${updateBookmarkDto.appId}" not found`,
-        );
+    if (updateBookmarkDto.appId !== undefined) {
+      if (updateBookmarkDto.appId === null) {
+        updateData.app = undefined;
+      } else {
+        const app = await this.appRepository.findOne({
+          where: { id: updateBookmarkDto.appId },
+        });
+        if (!app) {
+          throw new NotFoundException(
+            `App with ID "${updateBookmarkDto.appId}" not found`,
+          );
+        }
+        updateData.app = app;
       }
-      updateData.app = app;
     }
 
     if (updateBookmarkDto.collectionId) {

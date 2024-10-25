@@ -37,7 +37,7 @@ export class Bookmark {
   @ApiProperty({ required: false })
   image_url?: string;
 
-  @ManyToMany(() => Tag)
+  @ManyToMany(() => Tag, { cascade: true, onDelete: 'CASCADE' })
   @JoinTable({
     name: 'bookmark_tags',
     joinColumn: {
@@ -60,7 +60,9 @@ export class Bookmark {
   @ApiProperty({ type: String, required: false, description: 'Social app ID' })
   appId: string;
 
-  @ManyToOne(() => Collection, (collection) => collection.bookmarks)
+  @ManyToOne(() => Collection, (collection) => collection.bookmarks, {
+    onDelete: 'CASCADE',
+  })
   @Exclude({ toPlainOnly: true })
   collection: Collection;
 
