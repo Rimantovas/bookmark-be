@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import { UsersService } from 'src/users/users.service';
+import { UserRole } from '../shared/enums/user-role.enum';
 
 @Injectable()
 export class AuthService {
@@ -49,5 +50,13 @@ export class AuthService {
       // For other errors, re-throw
       throw error;
     }
+  }
+
+  async getUserRole(userId: string): Promise<UserRole | null> {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      return null;
+    }
+    return user.role;
   }
 }
