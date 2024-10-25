@@ -9,6 +9,7 @@ WORKDIR /usr/src/app
 COPY package.json ./
 COPY yarn.lock ./
 COPY .yarnrc.yml ./
+COPY .yarn ./
 
 RUN corepack enable && corepack prepare yarn@4.5.1 --activate
 
