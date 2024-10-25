@@ -13,10 +13,10 @@ COPY . .
 
 RUN corepack enable
 
-RUN corepack prepare yarn@stable --activate
+RUN corepack prepare yarn@4.5.1 --activate
 
 # Set Yarn version (optional, remove if not needed)
-RUN yarn set version stable
+# RUN yarn set version stable
 
 # Install dependencies
 RUN yarn install
