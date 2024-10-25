@@ -11,7 +11,6 @@ import {
 } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
 const CORS_OPTIONS = {
   origin: true,
   allowedHeaders: [
@@ -53,8 +52,6 @@ async function bootstrap() {
       },
     }),
   );
-
-  app.useGlobalFilters(new HttpExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Bookmarks API')
