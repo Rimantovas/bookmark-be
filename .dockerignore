@@ -4,6 +4,3 @@ build
 Dockerfile
 .dockerignore
 .gitignore
-
-.yarn/*
-!.yarn/releases/
