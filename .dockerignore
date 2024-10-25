@@ -4,5 +4,6 @@ build
 Dockerfile
 .dockerignore
 .gitignore
-.yarnrc.yml
-.yarn
+
+.yarn/*
+!.yarn/releases/
