@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import { Auth0JwtGuard } from './auth0-jwt.guard';
 import { Auth0Strategy } from './auth0.strategy';
 import { GetUserDecoratorService } from './get-user-decorator.service';
+import { PermissionsGuard } from './permissions.guard';
 
 @Module({
   imports: [
@@ -34,7 +35,13 @@ import { GetUserDecoratorService } from './get-user-decorator.service';
       }),
       inject: [GetUserDecoratorService],
     },
+    PermissionsGuard,
   ],
-  exports: [Auth0JwtGuard, PassportModule, GetUserDecoratorService],
+  exports: [
+    Auth0JwtGuard,
+    PassportModule,
+    GetUserDecoratorService,
+    PermissionsGuard,
+  ],
 })
 export class AuthModule {}

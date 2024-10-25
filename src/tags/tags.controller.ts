@@ -19,6 +19,9 @@ import {
 } from '@nestjs/swagger';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { RequirePermissions } from '../auth/require-permissions.decorator';
+import { UserRole } from '../shared/enums/user-role.enum';
 import { User } from '../users/user.entity';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
@@ -27,7 +30,7 @@ import { TagsService } from './tags.service';
 
 @ApiTags('tags')
 @Controller('tags')
-@UseGuards(Auth0JwtGuard)
+@UseGuards(Auth0JwtGuard, PermissionsGuard)
 @ApiBearerAuth()
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
@@ -42,9 +45,10 @@ export class TagsController {
     type: Tag,
   })
   @HttpCode(HttpStatus.CREATED)
+  @RequirePermissions(UserRole.PREMIUM)
   async createTag(
-    @GetUser() user: User,
     @Body() createTagDto: CreateTagDto,
+    @GetUser() user: User,
   ): Promise<Tag> {
     return this.tagsService.createTag(user.id, createTagDto);
   }
@@ -60,6 +64,7 @@ export class TagsController {
     isArray: true,
   })
   @HttpCode(HttpStatus.OK)
+  @RequirePermissions(UserRole.PREMIUM)
   async getTags(@GetUser() user: User): Promise<Tag[]> {
     return this.tagsService.getTags(user.id);
   }
@@ -91,6 +96,7 @@ export class TagsController {
     type: Tag,
   })
   @HttpCode(HttpStatus.OK)
+  @RequirePermissions(UserRole.PREMIUM)
   async updateTag(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTagDto: UpdateTagDto,
@@ -108,6 +114,7 @@ export class TagsController {
     status: HttpStatus.NO_CONTENT,
   })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermissions(UserRole.PREMIUM)
   async deleteTag(
     @Param('id', ParseUUIDPipe) id: string,
     @GetUser() user: User,

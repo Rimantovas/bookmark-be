@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { GetUserDecoratorService } from './auth/get-user-decorator.service';
+import { PermissionsGuard } from './auth/permissions.guard';
 import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { CollectionsModule } from './collections/collections.module';
 import { SocialAppsModule } from './social-apps/social-apps.module';
@@ -31,6 +34,13 @@ import { UsersModule } from './users/users.module';
     TagsModule,
     SocialAppsModule,
     BookmarksModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
+    },
+    GetUserDecoratorService,
   ],
 })
 export class AppModule {}
