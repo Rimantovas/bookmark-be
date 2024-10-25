@@ -31,7 +31,52 @@ export class BookmarksService {
     createBookmarkDto: CreateBookmarkDto,
     userId: string,
   ): Promise<Bookmark> {
-    return this.bookmarksRepository.createBookmark(createBookmarkDto, userId);
+    const { collectionId, tagIds, appId, ...bookmarkData } = createBookmarkDto;
+
+    // Check if the collection exists
+    const collection = await this.collectionRepository.findOne({
+      where: { id: collectionId },
+      relations: ['user'],
+    });
+    if (!collection || collection.user.id !== userId) {
+      throw new NotFoundException(
+        `Collection with ID "${collectionId}" not found`,
+      );
+    }
+
+    // Check and get tags if provided
+    let tags: Tag[] | undefined;
+    if (tagIds) {
+      tags = await this.tagRepository.find({
+        where: { id: In(tagIds), userId },
+      });
+      if (tags.length !== tagIds.length) {
+        throw new NotFoundException(
+          `One or more tag IDs were not found: ${tagIds.filter(
+            (id) => !tags?.some((tag) => tag.id === id),
+          )}`,
+        );
+      }
+    }
+
+    // Check and get app if provided
+    let app: SocialApp | undefined;
+    if (appId) {
+      app =
+        (await this.appRepository.findOne({ where: { id: appId } })) ??
+        undefined;
+      if (!app) {
+        throw new BadRequestException('Invalid app ID');
+      }
+    }
+
+    return this.bookmarksRepository.createBookmark({
+      ...bookmarkData,
+      collection,
+      tags,
+      app,
+      userId,
+    });
   }
 
   async getBookmark(id: string): Promise<Bookmark> {

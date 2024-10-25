@@ -13,8 +13,7 @@ export class CreateBookmarkDto {
   link: string;
 
   @IsString()
-  @IsOptional()
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   title?: string;
 
   @IsString()
@@ -38,7 +37,7 @@ export class CreateBookmarkDto {
   @IsUUID(undefined, { each: true })
   appId?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   @IsUUID(undefined, { each: true })
   collectionId?: string;
 

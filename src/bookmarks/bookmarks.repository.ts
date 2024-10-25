@@ -22,11 +22,8 @@ export class BookmarksRepository extends Repository<Bookmark> {
     });
   }
 
-  async createBookmark(
-    bookmark: Partial<Bookmark>,
-    userId: string,
-  ): Promise<Bookmark> {
-    const newBookmark = this.create({ ...bookmark, userId });
+  async createBookmark(bookmarkData: Partial<Bookmark>): Promise<Bookmark> {
+    const newBookmark = this.create(bookmarkData);
     return this.save(newBookmark);
   }
 
