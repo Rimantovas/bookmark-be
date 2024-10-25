@@ -5,22 +5,18 @@ RUN apk add --no-cache yarn python3 make g++
 
 WORKDIR /usr/src/app
 
-# Copy package.json and yarn.lock
-COPY package.json yarn.lock ./
+# Copy package.json and yarn.lock and .yarnrc.yml
+COPY package.json ./
+COPY yarn.lock ./
+COPY .yarnrc.yml ./
 
-# Copy the rest of the application code
-COPY . .
-
-RUN corepack enable
-
-RUN corepack prepare yarn@4.5.1 --activate
-
-# Set Yarn version (optional, remove if not needed)
-# RUN yarn set version stable
+RUN corepack enable && corepack prepare yarn@4.5.1 --activate
 
 # Install dependencies
 RUN yarn install
 
+# Copy the rest of the application code
+COPY . .
 
 # Build the application
 RUN yarn build
@@ -28,4 +24,4 @@ RUN yarn build
 EXPOSE 3000
 
 # Run migrations and start the application
-CMD yarn migration:run && yarn start:prod
+CMD yarn migration:run && node dist/src/main.js
