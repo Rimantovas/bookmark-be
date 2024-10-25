@@ -1,5 +1,10 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Headers,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 
 @ApiTags('auth')
@@ -12,7 +17,24 @@ export class AuthController {
     summary: 'User login',
     operationId: 'login',
   })
-  async login(@Body() loginDto: any) {
-    return this.authService.validateAndLogin(loginDto.idToken);
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Bearer token',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successful login',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  async login(@Headers('authorization') authHeader: string) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new UnauthorizedException('Invalid authorization header');
+    }
+
+    const accessToken = authHeader.split(' ')[1];
+    return this.authService.validateAndLogin(accessToken);
   }
 }

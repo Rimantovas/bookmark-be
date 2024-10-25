@@ -29,14 +29,24 @@ export class BookmarksRepository extends Repository<Bookmark> {
 
   async updateBookmark(
     id: string,
-    bookmark: Partial<Bookmark>,
+    bookmarkData: Partial<Bookmark>,
   ): Promise<Bookmark> {
-    await this.update(id, bookmark);
-    const updatedBookmark = await this.findById(id);
-    if (!updatedBookmark) {
+    const bookmark = await this.findById(id);
+    if (!bookmark) {
       throw new NotFoundException(`Bookmark with ID "${id}" not found`);
     }
-    return updatedBookmark;
+
+    // Handle many-to-many relationship for tags
+    if (bookmarkData.tags) {
+      bookmark.tags = bookmarkData.tags;
+      delete bookmarkData.tags;
+    }
+
+    // Update other properties
+    Object.assign(bookmark, bookmarkData);
+
+    // Save the updated bookmark
+    return this.save(bookmark);
   }
 
   async deleteBookmark(id: string): Promise<void> {

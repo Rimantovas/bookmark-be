@@ -3,10 +3,13 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -44,15 +47,36 @@ export class CollectionsController {
   })
   @UseGuards(Auth0JwtGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
   async createCollection(
-    @GetUser() user: User,
+    @GetUser() user: Promise<User>,
     @Body() createCollectionDto: CreateCollectionDto,
   ): Promise<Collection> {
+    const resolvedUser = await user;
+    console.log('CollectionsController: createCollection called', {
+      user: resolvedUser,
+      createCollectionDto,
+    });
     return this.collectionsService.createCollection(
-      user.id,
+      resolvedUser.id,
       createCollectionDto,
     );
   }
+
+  // @Get('search')
+  // @ApiOperation({
+  //   summary: 'Search public collections',
+  //   operationId: 'searchCollections',
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.OK,
+  //   type: [Collection],
+  // })
+  // async searchCollections(
+  //   @Query() searchParams: SearchPaginationDto,
+  // ): Promise<Collection[]> {
+  //   return this.collectionsService.searchCollections(searchParams);
+  // }
 
   @Get()
   @ApiOperation({
@@ -66,7 +90,9 @@ export class CollectionsController {
   })
   @UseGuards(Auth0JwtGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async getCollections(@GetUser() user: User): Promise<Collection[]> {
+    console.log('CollectionsController: getCollections called', { user });
     return this.collectionsService.getCollections(user.id);
   }
 
@@ -79,8 +105,15 @@ export class CollectionsController {
     status: HttpStatus.OK,
     type: Collection,
   })
-  async getCollection(@Param('id') id: string): Promise<Collection> {
-    return this.collectionsService.getCollection(id);
+  @HttpCode(HttpStatus.OK)
+  async getCollection(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<Collection> {
+    const collection = await this.collectionsService.getCollection(id);
+    if (collection.private) {
+      throw new UnauthorizedException('This collection is private');
+    }
+    return collection;
   }
 
   @Put(':id')
@@ -94,8 +127,9 @@ export class CollectionsController {
   })
   @UseGuards(Auth0JwtGuard)
   @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
   async updateCollection(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCollectionDto: UpdateCollectionDto,
   ): Promise<Collection> {
     return this.collectionsService.updateCollection(id, updateCollectionDto);
@@ -111,7 +145,10 @@ export class CollectionsController {
   })
   @UseGuards(Auth0JwtGuard)
   @ApiBearerAuth()
-  async deleteCollection(@Param('id') id: string): Promise<void> {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteCollection(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
     return this.collectionsService.deleteCollection(id);
   }
 
@@ -125,9 +162,14 @@ export class CollectionsController {
     description: 'Array of bookmarks in the collection',
     type: [BookmarkResponseDto],
   })
+  @HttpCode(HttpStatus.OK)
   async getCollectionBookmarks(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<BookmarkResponseDto[]> {
+    const collection = await this.collectionsService.getCollection(id);
+    if (collection.private) {
+      throw new UnauthorizedException('This collection is private');
+    }
     const bookmarks =
       await this.bookmarksService.getBookmarksByCollectionId(id);
     return bookmarks.map((bookmark) => new BookmarkResponseDto(bookmark));

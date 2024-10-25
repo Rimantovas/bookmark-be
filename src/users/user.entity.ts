@@ -24,9 +24,6 @@ export class User {
   @Column({ nullable: false, unique: true })
   email: string;
 
-  @Column({ nullable: false })
-  password: string;
-
   @Column({ nullable: true })
   image_url: string;
 

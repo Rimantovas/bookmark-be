@@ -1,7 +1,18 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
+import { SearchPaginationDto } from '../shared/dto/search-pagination.dto';
+import { UserResponseDto } from './dto/user-response.dto';
 import { User } from './user.entity';
 import { UsersService } from './users.service';
 
@@ -16,8 +27,28 @@ export class UsersController {
     summary: 'Get current user',
     operationId: 'getMyUser',
   })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: User,
+  })
   async getMyUser(@GetUser() user: User): Promise<User> {
     return user;
+  }
+
+  @Get('search')
+  @ApiOperation({
+    summary: 'Search users',
+    operationId: 'searchUsers',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [UserResponseDto],
+  })
+  async searchUsers(
+    @Query() searchParams: SearchPaginationDto,
+  ): Promise<UserResponseDto[]> {
+    const users = await this.usersService.searchUsers(searchParams);
+    return users.map((user) => new UserResponseDto(user));
   }
 
   @Get(':id')
@@ -25,7 +56,17 @@ export class UsersController {
     summary: 'Get a user by ID',
     operationId: 'getUser',
   })
-  async getUser(@Param('id') id: string): Promise<User | null> {
-    return this.usersService.findById(id);
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: UserResponseDto,
+  })
+  async getUser(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<UserResponseDto> {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return new UserResponseDto(user);
   }
 }

@@ -3,7 +3,10 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Query,
@@ -28,6 +31,7 @@ export class BookmarksController {
     summary: 'Create a new bookmark',
     operationId: 'createBookmark',
   })
+  @HttpCode(HttpStatus.CREATED)
   async createBookmark(
     @Body() createBookmarkDto: CreateBookmarkDto,
   ): Promise<Bookmark> {
@@ -39,6 +43,7 @@ export class BookmarksController {
     summary: 'Search bookmarks',
     operationId: 'searchBookmarks',
   })
+  @HttpCode(HttpStatus.OK)
   async searchBookmarks(@Query('q') query: string): Promise<Bookmark[]> {
     return this.bookmarksService.searchBookmarks(query);
   }
@@ -53,7 +58,10 @@ export class BookmarksController {
     description: 'The found bookmark',
     type: BookmarkResponseDto,
   })
-  async getBookmark(@Param('id') id: string): Promise<BookmarkResponseDto> {
+  @HttpCode(HttpStatus.OK)
+  async getBookmark(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<BookmarkResponseDto> {
     const bookmark = await this.bookmarksService.getBookmark(id);
     return new BookmarkResponseDto(bookmark);
   }
@@ -64,8 +72,9 @@ export class BookmarksController {
     summary: 'Update a bookmark',
     operationId: 'updateBookmark',
   })
+  @HttpCode(HttpStatus.OK)
   async updateBookmark(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBookmarkDto: UpdateBookmarkDto,
   ): Promise<Bookmark> {
     return this.bookmarksService.updateBookmark(id, updateBookmarkDto);
@@ -77,7 +86,8 @@ export class BookmarksController {
     summary: 'Delete a bookmark',
     operationId: 'deleteBookmark',
   })
-  async deleteBookmark(@Param('id') id: string): Promise<void> {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteBookmark(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.bookmarksService.deleteBookmark(id);
   }
 }

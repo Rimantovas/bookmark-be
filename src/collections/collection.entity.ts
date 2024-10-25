@@ -8,6 +8,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  VirtualColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 
@@ -42,4 +43,10 @@ export class Collection {
 
   @OneToMany(() => Bookmark, (bookmark) => bookmark.collection)
   bookmarks: Bookmark[];
+
+  @VirtualColumn({
+    query: (alias) =>
+      `SELECT COUNT(*) FROM bookmarks WHERE "collectionId" = ${alias}.id`,
+  })
+  bookmarkCount: number;
 }

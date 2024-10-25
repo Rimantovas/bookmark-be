@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { SearchPaginationDto } from '../shared/dto/search-pagination.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
-
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -21,7 +21,6 @@ export class UsersService {
   }
 
   async create(user: CreateUserDto) {
-
     const newUser = new User();
     newUser.email = user.email;
     newUser.name = user.name;
@@ -38,7 +37,7 @@ export class UsersService {
   async delete(id: string) {
     return this.usersRepository.deleteUser(id);
   }
-  
+
   private async generateUsername(name: string) {
     // Should be unique
     let username = name.toLowerCase().replace(/\s+/g, '.');
@@ -48,5 +47,9 @@ export class UsersService {
       count++;
     }
     return username;
+  }
+
+  async searchUsers(searchParams: SearchPaginationDto): Promise<User[]> {
+    return this.usersRepository.searchUsers(searchParams);
   }
 }

@@ -3,12 +3,20 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from '../users/user.entity';
@@ -20,6 +28,7 @@ import { TagsService } from './tags.service';
 @ApiTags('tags')
 @Controller('tags')
 @UseGuards(Auth0JwtGuard)
+@ApiBearerAuth()
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
@@ -28,6 +37,11 @@ export class TagsController {
     summary: 'Create a new tag',
     operationId: 'createTag',
   })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: Tag,
+  })
+  @HttpCode(HttpStatus.CREATED)
   async createTag(
     @GetUser() user: User,
     @Body() createTagDto: CreateTagDto,
@@ -40,6 +54,12 @@ export class TagsController {
     summary: 'Get all tags for a user',
     operationId: 'getTags',
   })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Tag,
+    isArray: true,
+  })
+  @HttpCode(HttpStatus.OK)
   async getTags(@GetUser() user: User): Promise<Tag[]> {
     return this.tagsService.getTags(user.id);
   }
@@ -49,7 +69,12 @@ export class TagsController {
     summary: 'Get a specific tag',
     operationId: 'getTag',
   })
-  async getTag(@Param('id') id: string): Promise<Tag> {
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Tag,
+  })
+  @HttpCode(HttpStatus.OK)
+  async getTag(@Param('id', ParseUUIDPipe) id: string): Promise<Tag> {
     return this.tagsService.getTag(id);
   }
 
@@ -58,8 +83,13 @@ export class TagsController {
     summary: 'Update a tag',
     operationId: 'updateTag',
   })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: Tag,
+  })
+  @HttpCode(HttpStatus.OK)
   async updateTag(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTagDto: UpdateTagDto,
   ): Promise<Tag> {
     return this.tagsService.updateTag(id, updateTagDto);
@@ -70,7 +100,11 @@ export class TagsController {
     summary: 'Delete a tag',
     operationId: 'deleteTag',
   })
-  async deleteTag(@Param('id') id: string): Promise<void> {
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+  })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteTag(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.tagsService.deleteTag(id);
   }
 }

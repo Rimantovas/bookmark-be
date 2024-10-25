@@ -1,5 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+} from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SocialApp } from './social-app.entity';
 import { SocialAppsService } from './social-apps.service';
 
@@ -13,6 +19,11 @@ export class SocialAppsController {
     summary: 'Get all social apps',
     operationId: 'getSocialApps',
   })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SocialApp,
+    isArray: true,
+  })
   async getSocialApps(): Promise<SocialApp[]> {
     return this.socialAppsService.getSocialApps();
   }
@@ -22,7 +33,13 @@ export class SocialAppsController {
     summary: 'Get a specific social app',
     operationId: 'getSocialApp',
   })
-  async getSocialApp(@Param('id') id: string): Promise<SocialApp> {
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SocialApp,
+  })
+  async getSocialApp(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<SocialApp> {
     return this.socialAppsService.getSocialApp(id);
   }
 }

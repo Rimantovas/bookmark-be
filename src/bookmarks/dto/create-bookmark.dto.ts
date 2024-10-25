@@ -1,40 +1,40 @@
-import {
-  IsArray,
-  IsObject,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateBookmarkDto {
   @IsString()
+  @ApiProperty()
   link: string;
 
   @IsString()
   @IsOptional()
+  @ApiProperty({ required: false })
   title?: string;
 
   @IsString()
   @IsOptional()
+  @ApiProperty({ required: false })
   description?: string;
 
   @IsString()
   @IsOptional()
+  @ApiProperty({ required: false })
   image_url?: string;
 
   @IsArray()
-  @IsUUID(4, { each: true })
   @IsOptional()
+  @ApiProperty({ required: false })
   tagIds?: string[];
 
-  @IsUUID(4)
+  @ApiProperty({ required: false })
   @IsOptional()
   appId?: string;
 
-  @IsUUID(4)
-  collectionId: string;
+  @ApiProperty({ required: false })
+  collectionId?: string;
 
   @IsObject()
   @IsOptional()
+  @ApiProperty({ required: false })
   metadata?: Record<string, any>;
 }

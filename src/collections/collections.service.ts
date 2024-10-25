@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { SearchPaginationDto } from '../shared/dto/search-pagination.dto';
 import { Collection } from './collection.entity';
 import { CollectionsRepository } from './collections.repository';
 import { CreateCollectionDto } from './dto/create-collection.dto';
@@ -45,5 +46,11 @@ export class CollectionsService {
   async deleteCollection(id: string): Promise<void> {
     await this.getCollection(id);
     await this.collectionsRepository.deleteCollection(id);
+  }
+
+  async searchCollections(
+    searchParams: SearchPaginationDto,
+  ): Promise<Collection[]> {
+    return this.collectionsRepository.searchCollections(searchParams);
   }
 }

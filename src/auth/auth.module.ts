@@ -1,27 +1,40 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { CallHandler, ExecutionContext, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { UsersRepository } from 'src/users/users.repository';
-import { UsersService } from 'src/users/users.service';
+import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { Auth0JwtGuard } from './auth0-jwt.guard';
 import { Auth0Strategy } from './auth0.strategy';
-import { JwtStrategy } from './jwt.strategy';
+import { GetUserDecoratorService } from './get-user-decorator.service';
 
 @Module({
-  imports: [PassportModule.register({ defaultStrategy: 'jwt' }), ConfigModule],
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    UsersModule,
+    ConfigModule,
+  ],
   controllers: [AuthController],
   providers: [
     AuthService,
-    JwtStrategy,
     Auth0Strategy,
     Auth0JwtGuard,
-    UsersService,
     JwtService,
-    UsersRepository,
+    GetUserDecoratorService,
+    ConfigService,
+    {
+      provide: 'APP_INTERCEPTOR',
+      useFactory: (getUserService: GetUserDecoratorService) => ({
+        intercept: (context: ExecutionContext, next: CallHandler) => {
+          const request = context.switchToHttp().getRequest();
+          request.getUserService = getUserService;
+          return next.handle();
+        },
+      }),
+      inject: [GetUserDecoratorService],
+    },
   ],
-  exports: [Auth0JwtGuard],
+  exports: [Auth0JwtGuard, PassportModule, GetUserDecoratorService],
 })
 export class AuthModule {}
