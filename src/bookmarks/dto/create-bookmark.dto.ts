@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateBookmarkDto {
   @IsString()
@@ -22,15 +28,18 @@ export class CreateBookmarkDto {
   image_url?: string;
 
   @IsArray()
+  @IsUUID(undefined, { each: true })
   @IsOptional()
   @ApiProperty({ required: false })
   tagIds?: string[];
 
-  @ApiProperty({ required: false })
   @IsOptional()
+  @ApiProperty({ required: false })
+  @IsUUID(undefined, { each: true })
   appId?: string;
 
   @ApiProperty({ required: false })
+  @IsUUID(undefined, { each: true })
   collectionId?: string;
 
   @IsObject()
