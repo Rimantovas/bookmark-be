@@ -52,8 +52,8 @@ export class AuthService {
     }
   }
 
-  async getUserRole(userId: string): Promise<UserRole | null> {
-    const user = await this.usersService.findById(userId);
+  async getUserRole(email: string): Promise<UserRole | null> {
+    const user = await this.usersService.findByEmail(email);
     if (!user) {
       return null;
     }
