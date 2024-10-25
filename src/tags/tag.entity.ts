@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, instanceToPlain } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -29,10 +30,12 @@ export class Tag {
 
   @CreateDateColumn()
   @ApiProperty({ type: Date })
+  @Exclude({ toPlainOnly: true })
   createdAt: Date;
 
   @UpdateDateColumn()
   @ApiProperty({ type: Date })
+  @Exclude({ toPlainOnly: true })
   updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.tags)
@@ -40,5 +43,10 @@ export class Tag {
 
   @Column()
   @ApiProperty({ type: String })
+  @Exclude({ toPlainOnly: true })
   userId: string;
+
+  toJSON() {
+    return instanceToPlain(this);
+  }
 }

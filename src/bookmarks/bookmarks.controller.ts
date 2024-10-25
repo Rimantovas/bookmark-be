@@ -13,10 +13,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { GetUser } from 'src/auth/get-user.decorator';
+import { User } from 'src/users/user.entity';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { Bookmark } from './bookmark.entity';
 import { BookmarksService } from './bookmarks.service';
-import { BookmarkResponseDto } from './dto/bookmark-response.dto';
+// import { BookmarkResponseDto } from './dto/bookmark-response.dto';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
 import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 
@@ -34,8 +36,13 @@ export class BookmarksController {
   @HttpCode(HttpStatus.CREATED)
   async createBookmark(
     @Body() createBookmarkDto: CreateBookmarkDto,
+    @GetUser() user: Promise<User>,
   ): Promise<Bookmark> {
-    return this.bookmarksService.createBookmark(createBookmarkDto);
+    const resolvedUser = await user;
+    return this.bookmarksService.createBookmark(
+      createBookmarkDto,
+      resolvedUser.id,
+    );
   }
 
   @Get('search')
@@ -56,14 +63,11 @@ export class BookmarksController {
   @ApiResponse({
     status: 200,
     description: 'The found bookmark',
-    type: BookmarkResponseDto,
+    type: Bookmark,
   })
   @HttpCode(HttpStatus.OK)
-  async getBookmark(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<BookmarkResponseDto> {
-    const bookmark = await this.bookmarksService.getBookmark(id);
-    return new BookmarkResponseDto(bookmark);
+  async getBookmark(@Param('id', ParseUUIDPipe) id: string): Promise<Bookmark> {
+    return await this.bookmarksService.getBookmark(id);
   }
 
   @Put(':id')
@@ -76,8 +80,14 @@ export class BookmarksController {
   async updateBookmark(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBookmarkDto: UpdateBookmarkDto,
+    @GetUser() user: Promise<User>,
   ): Promise<Bookmark> {
-    return this.bookmarksService.updateBookmark(id, updateBookmarkDto);
+    const resolvedUser = await user;
+    return this.bookmarksService.updateBookmark(
+      id,
+      updateBookmarkDto,
+      resolvedUser.id,
+    );
   }
 
   @Delete(':id')

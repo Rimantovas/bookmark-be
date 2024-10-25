@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, instanceToPlain } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -12,6 +13,7 @@ import {
 import { Collection } from '../collections/collection.entity';
 import { SocialApp } from '../social-apps/social-app.entity';
 import { Tag } from '../tags/tag.entity';
+import { User } from '../users/user.entity';
 
 @Entity('bookmarks')
 export class Bookmark {
@@ -51,12 +53,27 @@ export class Bookmark {
   tags: Tag[];
 
   @ManyToOne(() => SocialApp, { nullable: true })
-  @ApiProperty({ type: String, required: false, description: 'Social app ID' })
+  @Exclude({ toPlainOnly: true })
   app: SocialApp;
 
+  @Column({ nullable: true })
+  @ApiProperty({ type: String, required: false, description: 'Social app ID' })
+  appId: string;
+
   @ManyToOne(() => Collection, (collection) => collection.bookmarks)
-  @ApiProperty({ type: String, required: false, description: 'Collection ID' })
+  @Exclude({ toPlainOnly: true })
   collection: Collection;
+
+  @Column({ nullable: true })
+  @ApiProperty({ type: String, required: true, description: 'Collection ID' })
+  collectionId: string;
+
+  @ManyToOne(() => User, (user) => user.bookmarks)
+  user: User;
+
+  @Column()
+  @ApiProperty({ type: String, required: true, description: 'User ID' })
+  userId: string;
 
   @Column({ type: 'jsonb', nullable: true })
   @ApiProperty({ type: Object, required: false })
@@ -69,4 +86,8 @@ export class Bookmark {
   @UpdateDateColumn()
   @ApiProperty()
   updatedAt: Date;
+
+  toJSON() {
+    return instanceToPlain(this);
+  }
 }

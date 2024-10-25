@@ -1,4 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SocialApp } from 'src/social-apps/social-app.entity';
+import { User } from 'src/users/user.entity';
+import { In, Repository } from 'typeorm';
+import { Collection } from '../collections/collection.entity';
+import { Tag } from '../tags/tag.entity'; // Make sure to import the Tag entity
 import { Bookmark } from './bookmark.entity';
 import { BookmarksRepository } from './bookmarks.repository';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
@@ -6,12 +17,21 @@ import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 
 @Injectable()
 export class BookmarksService {
-  constructor(private readonly bookmarksRepository: BookmarksRepository) {}
+  constructor(
+    private readonly bookmarksRepository: BookmarksRepository,
+    @InjectRepository(Tag)
+    private readonly tagRepository: Repository<Tag>,
+    @InjectRepository(SocialApp)
+    private readonly appRepository: Repository<SocialApp>,
+    @InjectRepository(Collection)
+    private readonly collectionRepository: Repository<Collection>,
+  ) {}
 
   async createBookmark(
     createBookmarkDto: CreateBookmarkDto,
+    userId: string,
   ): Promise<Bookmark> {
-    return this.bookmarksRepository.createBookmark(createBookmarkDto);
+    return this.bookmarksRepository.createBookmark(createBookmarkDto, userId);
   }
 
   async getBookmark(id: string): Promise<Bookmark> {
@@ -25,12 +45,54 @@ export class BookmarksService {
   async updateBookmark(
     id: string,
     updateBookmarkDto: UpdateBookmarkDto,
+    userId: string,
   ): Promise<Bookmark> {
     const bookmark = await this.getBookmark(id);
-    return this.bookmarksRepository.updateBookmark(id, {
-      ...bookmark,
-      ...updateBookmarkDto,
-    });
+
+    // Check if the bookmark belongs to the user
+    if (bookmark.userId !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to update this bookmark',
+      );
+    }
+
+    const updateData: Partial<Bookmark> = { ...updateBookmarkDto };
+
+    if (updateBookmarkDto.tagIds) {
+      const tags = await this.tagRepository.find({
+        where: { id: In(updateBookmarkDto.tagIds), userId },
+      });
+      if (tags.length !== updateBookmarkDto.tagIds.length) {
+        throw new BadRequestException(
+          'One or more tag IDs are invalid or do not belong to you',
+        );
+      }
+      updateData.tags = tags;
+    }
+
+    if (updateBookmarkDto.appId) {
+      const app = await this.appRepository.findOne({
+        where: { id: updateBookmarkDto.appId },
+      });
+      if (!app) {
+        throw new BadRequestException('Invalid app ID');
+      }
+      updateData.app = app;
+    }
+
+    if (updateBookmarkDto.collectionId) {
+      const collection = await this.collectionRepository.findOne({
+        where: { id: updateBookmarkDto.collectionId, userId },
+      });
+      if (!collection) {
+        throw new BadRequestException(
+          'Invalid collection ID or the collection does not belong to you',
+        );
+      }
+      updateData.collection = collection;
+    }
+
+    return this.bookmarksRepository.updateBookmark(id, updateData);
   }
 
   async deleteBookmark(id: string): Promise<void> {
@@ -42,7 +104,27 @@ export class BookmarksService {
     return this.bookmarksRepository.searchBookmarks(query);
   }
 
-  async getBookmarksByCollectionId(collectionId: string): Promise<Bookmark[]> {
+  async getBookmarksByCollectionId(
+    collectionId: string,
+    user: User | null,
+  ): Promise<Bookmark[]> {
+    const collection = await this.collectionRepository.findOne({
+      where: { id: collectionId },
+      relations: ['user'],
+    });
+
+    if (!collection) {
+      throw new NotFoundException(
+        `Collection with ID "${collectionId}" not found`,
+      );
+    }
+
+    if (collection.private && (!user || user.id !== collection.user.id)) {
+      throw new ForbiddenException(
+        'You do not have permission to view this collection',
+      );
+    }
+
     return this.bookmarksRepository.findByCollectionId(collectionId);
   }
 }

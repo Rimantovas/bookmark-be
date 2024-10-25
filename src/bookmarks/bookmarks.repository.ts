@@ -22,8 +22,11 @@ export class BookmarksRepository extends Repository<Bookmark> {
     });
   }
 
-  async createBookmark(bookmark: Partial<Bookmark>): Promise<Bookmark> {
-    const newBookmark = this.create(bookmark);
+  async createBookmark(
+    bookmark: Partial<Bookmark>,
+    userId: string,
+  ): Promise<Bookmark> {
+    const newBookmark = this.create({ ...bookmark, userId });
     return this.save(newBookmark);
   }
 
@@ -36,13 +39,7 @@ export class BookmarksRepository extends Repository<Bookmark> {
       throw new NotFoundException(`Bookmark with ID "${id}" not found`);
     }
 
-    // Handle many-to-many relationship for tags
-    if (bookmarkData.tags) {
-      bookmark.tags = bookmarkData.tags;
-      delete bookmarkData.tags;
-    }
-
-    // Update other properties
+    // Update properties
     Object.assign(bookmark, bookmarkData);
 
     // Save the updated bookmark

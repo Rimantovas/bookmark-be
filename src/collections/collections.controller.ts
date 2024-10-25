@@ -18,10 +18,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { GetUserOptional } from 'src/auth/get-user-optional.decorator';
+import { Bookmark } from 'src/bookmarks/bookmark.entity';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import { BookmarksService } from '../bookmarks/bookmarks.service';
-import { BookmarkResponseDto } from '../bookmarks/dto/bookmark-response.dto';
 import { User } from '../users/user.entity';
 import { Collection } from './collection.entity';
 import { CollectionsService } from './collections.service';
@@ -160,18 +161,13 @@ export class CollectionsController {
   @ApiResponse({
     status: 200,
     description: 'Array of bookmarks in the collection',
-    type: [BookmarkResponseDto],
+    type: [Bookmark],
   })
   @HttpCode(HttpStatus.OK)
   async getCollectionBookmarks(
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<BookmarkResponseDto[]> {
-    const collection = await this.collectionsService.getCollection(id);
-    if (collection.private) {
-      throw new UnauthorizedException('This collection is private');
-    }
-    const bookmarks =
-      await this.bookmarksService.getBookmarksByCollectionId(id);
-    return bookmarks.map((bookmark) => new BookmarkResponseDto(bookmark));
+    @GetUserOptional() user: User | null,
+  ): Promise<Bookmark[]> {
+    return await this.bookmarksService.getBookmarksByCollectionId(id, user);
   }
 }

@@ -24,15 +24,15 @@ export class UpdateBookmarkDto {
   image_url?: string;
 
   @IsArray()
-  @IsUUID(4, { each: true })
+  @IsUUID(undefined, { each: true })
   @IsOptional()
   tagIds?: string[];
 
-  @IsUUID(4)
+  @IsUUID(undefined)
   @IsOptional()
   appId?: string;
 
-  @IsUUID(4)
+  @IsUUID(undefined)
   @IsOptional()
   collectionId?: string;
 
