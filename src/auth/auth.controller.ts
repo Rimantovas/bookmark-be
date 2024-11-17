@@ -39,7 +39,7 @@ export class AuthController {
     status: 401,
     description: 'Unauthorized',
   })
-  async login(@Headers('authorization') authHeader: string) {
+  async login(@Headers('Authorization') authHeader: string) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new UnauthorizedException('Invalid authorization header');
     }
@@ -48,15 +48,15 @@ export class AuthController {
     return this.authService.validateAndLogin(accessToken);
   }
 
-  @Get('role/:userId')
+  @Get('role/:email')
   @ApiOperation({
     summary: 'Get user role',
     operationId: 'getUserRole',
   })
   @ApiParam({
-    name: 'userId',
+    name: 'email',
     required: true,
-    description: 'ID of the user',
+    description: 'Email of the user',
     schema: { type: 'string' },
   })
   @ApiResponse({
@@ -76,8 +76,8 @@ export class AuthController {
     status: 404,
     description: 'User not found',
   })
-  async getUserRole(@Param('userId') userId: string) {
-    const role = await this.authService.getUserRole(userId);
+  async getUserRole(@Param('email') email: string) {
+    const role = await this.authService.getUserRole(email);
     if (!role) {
       throw new NotFoundException('User not found');
     }

@@ -37,7 +37,7 @@ export class AuthService {
       }
 
       // Return user data
-      return { user };
+      return { ...user };
     } catch (error) {
       // If it's an axios error, return the response data or status
       if (axios.isAxiosError(error)) {
