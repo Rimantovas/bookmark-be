@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -19,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { GetUserOptional } from 'src/auth/get-user-optional.decorator';
 import { Bookmark } from 'src/bookmarks/bookmark.entity';
+import { SearchPaginationDto } from 'src/shared/dto/search-pagination.dto';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import { BookmarksService } from '../bookmarks/bookmarks.service';
@@ -63,20 +65,25 @@ export class CollectionsController {
     );
   }
 
-  // @Get('search')
-  // @ApiOperation({
-  //   summary: 'Search public collections',
-  //   operationId: 'searchCollections',
-  // })
-  // @ApiResponse({
-  //   status: HttpStatus.OK,
-  //   type: [Collection],
-  // })
-  // async searchCollections(
-  //   @Query() searchParams: SearchPaginationDto,
-  // ): Promise<Collection[]> {
-  //   return this.collectionsService.searchCollections(searchParams);
-  // }
+  @Get('search')
+  @ApiOperation({
+    summary: 'Search public collections',
+    operationId: 'searchCollections',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: [Collection],
+  })
+  async searchCollections(
+    @Query() searchParams: SearchPaginationDto,
+    @GetUserOptional() user: Promise<User | null>,
+  ): Promise<Collection[]> {
+    const resolvedUser = await user;
+    return this.collectionsService.searchCollections(
+      searchParams,
+      resolvedUser?.id,
+    );
+  }
 
   @Get()
   @ApiOperation({

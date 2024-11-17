@@ -47,11 +47,23 @@ export class CollectionsRepository extends Repository<Collection> {
 
   async searchCollections(
     searchParams: SearchPaginationDto,
+    userId?: string,
   ): Promise<Collection[]> {
     const { query, page, limit } = searchParams;
-    const queryBuilder = this.createQueryBuilder('collection')
-      .leftJoinAndSelect('collection.bookmarks', 'bookmarks')
-      .where('collection.private = :isPrivate', { isPrivate: false });
+    const queryBuilder = this.createQueryBuilder('collection');
+    if (userId) {
+      queryBuilder.where(
+        '(collection.private = :isPrivate OR collection.userId = :userId)',
+        {
+          isPrivate: false,
+          userId,
+        },
+      );
+    } else {
+      queryBuilder.where('collection.private = :isPrivate', {
+        isPrivate: false,
+      });
+    }
 
     if (query) {
       queryBuilder.andWhere('collection.title ILIKE :query', {
@@ -60,15 +72,6 @@ export class CollectionsRepository extends Repository<Collection> {
     }
 
     queryBuilder
-      .addSelect('COUNT(bookmarks.id)', 'bookmarkCount')
-      .groupBy('collection.id')
-      .groupBy('collection.title')
-      .groupBy('collection.description')
-      .groupBy('collection.private')
-      .groupBy('collection.userId')
-      .groupBy('collection.createdAt')
-      .groupBy('collection.updatedAt')
-      .orderBy('bookmarkCount', 'DESC')
       .addOrderBy('collection.createdAt', 'DESC')
       .addOrderBy('collection.updatedAt', 'DESC')
       .skip(((page ?? 1) - 1) * (limit ?? 10))

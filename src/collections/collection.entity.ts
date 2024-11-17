@@ -51,5 +51,21 @@ export class Collection {
     query: (alias) =>
       `SELECT COUNT(*) FROM bookmarks WHERE "collectionId" = ${alias}.id`,
   })
+  @ApiProperty()
   bookmarkCount: number;
+
+  @VirtualColumn({
+    query: (alias) =>
+      `SELECT COALESCE(ARRAY_AGG(image_url) FILTER (WHERE image_url IS NOT NULL), ARRAY[]::text[])
+       FROM (
+         SELECT image_url 
+         FROM bookmarks 
+         WHERE "collectionId" = ${alias}.id 
+         AND image_url IS NOT NULL 
+         ORDER BY "createdAt" DESC 
+         LIMIT 4
+       ) sub`,
+  })
+  @ApiProperty({ type: [String] })
+  images: string[];
 }

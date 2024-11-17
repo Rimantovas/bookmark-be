@@ -63,7 +63,8 @@ export class CollectionsService {
 
   async searchCollections(
     searchParams: SearchPaginationDto,
+    userId?: string,
   ): Promise<Collection[]> {
-    return this.collectionsRepository.searchCollections(searchParams);
+    return this.collectionsRepository.searchCollections(searchParams, userId);
   }
 }

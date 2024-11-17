@@ -11,9 +11,13 @@ export class UserResponseDto {
   @ApiProperty()
   username: string;
 
+  @ApiProperty()
+  image_url: string;
+
   constructor(user: User) {
     this.id = user.id;
     this.name = user.name;
     this.username = user.username;
+    this.image_url = user.image_url;
   }
 }
