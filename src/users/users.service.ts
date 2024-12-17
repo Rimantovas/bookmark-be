@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { UserRole } from 'src/shared/enums/user-role.enum';
 import { SearchPaginationDto } from '../shared/dto/search-pagination.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
@@ -51,5 +52,9 @@ export class UsersService {
 
   async searchUsers(searchParams: SearchPaginationDto): Promise<User[]> {
     return this.usersRepository.searchUsers(searchParams);
+  }
+
+  public async changeMyRole(user: User, role: UserRole): Promise<User> {
+    return this.usersRepository.changeMyRole(user, role);
   }
 }

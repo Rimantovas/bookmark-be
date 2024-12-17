@@ -34,11 +34,11 @@ export class CreateBookmarkDto {
 
   @IsOptional()
   @ApiProperty({ required: false })
-  @IsUUID(undefined, { each: true })
+  @IsUUID(undefined)
   appId?: string;
 
   @ApiProperty({ required: true })
-  @IsUUID(undefined, { each: true })
+  @IsUUID(undefined)
   collectionId?: string;
 
   @IsObject()

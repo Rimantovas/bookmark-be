@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { UserRole } from 'src/shared/enums/user-role.enum';
 import { DataSource, Repository } from 'typeorm';
 import { SearchPaginationDto } from '../shared/dto/search-pagination.dto';
 import { User } from './user.entity';
@@ -53,5 +54,15 @@ export class UsersRepository extends Repository<User> {
       .take(limit ?? 10);
 
     return queryBuilder.getMany();
+  }
+
+  async changeMyRole(user: User, role: UserRole): Promise<User> {
+    await this.update(user.id, { role });
+
+    const updatedUser = await this.findOneBy({ id: user.id });
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+    return updatedUser;
   }
 }

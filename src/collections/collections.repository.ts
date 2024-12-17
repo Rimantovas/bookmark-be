@@ -19,7 +19,9 @@ export class CollectionsRepository extends Repository<Collection> {
 
   async createCollection(collection: Partial<Collection>): Promise<Collection> {
     const newCollection = this.create(collection);
-    return this.save(newCollection);
+    await this.save(newCollection);
+    const c = await this.findById(newCollection.id);
+    return c!;
   }
 
   async updateCollection(

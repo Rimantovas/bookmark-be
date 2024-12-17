@@ -65,4 +65,14 @@ export class BookmarksRepository extends Repository<Bookmark> {
       .andWhere('bookmark.userId = :userId', { userId })
       .getMany();
   }
+
+  async findBySocialApp(
+    socialAppId: string,
+    userId: string,
+  ): Promise<Bookmark[]> {
+    return this.find({
+      where: { app: { id: socialAppId }, userId },
+      relations: ['tags', 'app'],
+    });
+  }
 }

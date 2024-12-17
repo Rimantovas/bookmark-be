@@ -205,4 +205,11 @@ export class BookmarksService {
 
     return this.bookmarksRepository.findByCollectionId(collectionId);
   }
+
+  async getBookmarksBySocialApp(
+    socialAppId: string,
+    userId: string,
+  ): Promise<Bookmark[]> {
+    return this.bookmarksRepository.findBySocialApp(socialAppId, userId);
+  }
 }

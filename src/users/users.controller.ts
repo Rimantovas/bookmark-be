@@ -1,10 +1,12 @@
 import {
+  Body,
   Controller,
   Get,
   HttpStatus,
   NotFoundException,
   Param,
   ParseUUIDPipe,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +14,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth0JwtGuard } from '../auth/auth0-jwt.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import { SearchPaginationDto } from '../shared/dto/search-pagination.dto';
+import { ChangeRoleDto } from './dto/change-role.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { User } from './user.entity';
 import { UsersService } from './users.service';
@@ -68,5 +71,25 @@ export class UsersController {
       throw new NotFoundException('User not found');
     }
     return new UserResponseDto(user);
+  }
+  @Post('role')
+  @ApiOperation({
+    summary: 'Change current user role',
+    operationId: 'changeMyRole',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: UserResponseDto,
+  })
+  async changeMyRole(
+    @GetUser() user: User,
+    @Body() changeRoleDto: ChangeRoleDto,
+  ): Promise<UserResponseDto> {
+    console.log('changeMyRole', changeRoleDto);
+    const updatedUser = await this.usersService.changeMyRole(
+      user,
+      changeRoleDto.role,
+    );
+    return new UserResponseDto(updatedUser);
   }
 }
